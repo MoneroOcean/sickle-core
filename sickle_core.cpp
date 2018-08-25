@@ -15,8 +15,8 @@ class Simple: public StreamingWorker {
             puts(pi->name.c_str());
             puts(pi->data.c_str());
         }
-        if (i % 10000 == 0) {
-          Message tosend("integer", std::to_string(++i));
+        if (++i % 10000 == 0) {
+          Message tosend("integer", std::to_string(i));
           writeToNode(progress, tosend);
         }
       }
