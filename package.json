@@ -1,17 +1,18 @@
 {
-    "name": "sickle_core",
+    "name":    "sickle_core",
     "version": "0.0.1",
-    "main": "sickle_core",
+    "main":    "sickle_core",
     "author": {
-        "name": "MoneroOcean",
+        "name":  "MoneroOcean",
         "email": "support@moneroocean.stream"
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/MoneroOcean/sickle_core.git"
+        "url":  "https://github.com/MoneroOcean/sickle_core.git"
     },
-    "dependencies" : {
-        "bindings" : "*",
-        "nan": "^2.0.0"
+    "dependencies": {
+        "bindings":             "*",
+        "nan":                  "^2.0.0",
+        "streaming-worker-sdk": "^0.9.0"
     }
 }
