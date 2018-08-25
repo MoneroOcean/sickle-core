@@ -65,6 +65,7 @@ class StreamingWorker: public Nan::AsyncProgressQueueWorker<char> {
     private:
 
         void drainQueue() {
+            Nan::HandleScope scope;
             // drain the queue - since we might only get called once for many writes
             std::deque<Message> contents;
             toNode.readAll(contents);
@@ -109,6 +110,7 @@ class StreamingWorker: public Nan::AsyncProgressQueueWorker<char> {
         }
       
         void HandleErrorCallback() {
+            Nan::HandleScope scope;
             v8::Local<v8::Value> argv[] = {
                 v8::Exception::Error(Nan::New<v8::String>(ErrorMessage()).ToLocalChecked())
             };
