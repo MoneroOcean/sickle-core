@@ -1,14 +1,21 @@
 #include "streaming-worker.h"
 
-class Simple : public StreamingWorker {
+class Simple: public StreamingWorker {
   public:
     Simple(Callback* const data, Callback* const complete, Callback* const error_callback, const v8::Local<v8::Object>& options)
       : StreamingWorker(data, complete, error_callback) {
     }
      
-    void Execute (const AsyncProgressWorker::ExecutionProgress& progress) {
-      for (int i = 0; i < 100; i++) {
-        Message tosend("integer", std::to_string(i));
+    void Execute(const AsyncProgressWorker::ExecutionProgress& progress) {
+      int i = 0;
+      while (true) {
+        std::deque<Message> messages;
+        fromNode.readAll(messages);
+        for (std::deque<Message>::const_iterator pi = messages.begin(); pi != messages.end(); ++ pi) {
+            puts(pi->name);
+            puts(pi->data);
+        }
+        Message tosend("integer", std::to_string(++i));
         writeToNode(progress, tosend);
       }
     }
