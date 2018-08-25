@@ -92,14 +92,14 @@ class StreamingWorker: public Nan::AsyncProgressQueueWorker<char> {
         }
   
   
-        Callback* progress;
-        Callback* error_callback;
+        Nan::Callback* progress;
+        Nan::Callback* error_callback;
         PCQueue<Message> toNode;
         bool input_closed;
 
     public:
 
-        StreamingWorker(Callback* progress, Callback* callback, Callback* error_callback)
+        StreamingWorker(Nan::Callback* progress, Nan::Callback* callback, Nan::Callback* error_callback)
             : Nan::AsyncProgressQueueWorker<char>(callback), progress(progress), error_callback(error_callback)
             {
                 input_closed = false;
@@ -135,7 +135,7 @@ class StreamingWorker: public Nan::AsyncProgressQueueWorker<char> {
         PCQueue<Message> fromNode;
 };
 
-StreamingWorker* create_worker(Callback*, Callback*, Callback*, v8::Local<v8::Object>&);
+StreamingWorker* create_worker(Nan::Callback*, Nan::Callback*, Nan::Callback*, v8::Local<v8::Object>&);
 
 class StreamWorkerWrapper: public Nan::ObjectWrap {
 
@@ -161,9 +161,9 @@ class StreamWorkerWrapper: public Nan::ObjectWrap {
 
         static NAN_METHOD(New) {
             if (info.IsConstructCall()) {
-                Callback *data_callback       = new Callback(info[0].As<v8::Function>());
-                Callback *complete_callback   = new Callback(info[1].As<v8::Function>());
-                Callback *error_callback      = new Callback(info[2].As<v8::Function>());
+                Nan::Callback *data_callback       = new Nan::Callback(info[0].As<v8::Function>());
+                Nan::Callback *complete_callback   = new Nan::Callback(info[1].As<v8::Function>());
+                Nan::Callback *error_callback      = new Nan::Callback(info[2].As<v8::Function>());
                 v8::Local<v8::Object> options = info[3].As<v8::Object>();
 
                 StreamWorkerWrapper *obj = new StreamWorkerWrapper(create_worker(data_callback, complete_callback, error_callback, options));

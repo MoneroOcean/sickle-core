@@ -2,7 +2,7 @@
 
 class Simple: public StreamingWorker {
   public:
-    Simple(Callback* const data, Callback* const complete, Callback* const error_callback, const v8::Local<v8::Object>& options)
+    Simple(Nan::Callback* const data, Nan::Callback* const complete, Nan::Callback* const error_callback, const v8::Local<v8::Object>& options)
       : StreamingWorker(data, complete, error_callback) {
     }
      
@@ -23,7 +23,7 @@ class Simple: public StreamingWorker {
     }
 };
 
-StreamingWorker* create_worker(Callback* const data, Callback* const complete, Callback* const error_callback, v8::Local<v8::Object>& options) {
+StreamingWorker* create_worker(Nan::Callback* const data, Nan::Callback* const complete, Nan::Callback* const error_callback, v8::Local<v8::Object>& options) {
   return new Simple(data, complete, error_callback, options);
 }
 
