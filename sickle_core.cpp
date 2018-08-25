@@ -6,7 +6,7 @@ class Simple: public StreamingWorker {
       : StreamingWorker(data, complete, error_callback) {
     }
      
-    void Execute(const AsyncProgressWorker::ExecutionProgress& progress) {
+    void Execute(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress) {
       int i = 0;
       while (true) {
         std::deque<Message> messages;
