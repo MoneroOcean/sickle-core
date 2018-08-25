@@ -71,8 +71,8 @@ class StreamingWorker: public Nan::AsyncProgressQueueWorker<char> {
 
             for (Message& msg : contents) {
                 v8::Local<v8::Value> argv[] = {
-                    New<v8::String>(msg.name.c_str()).ToLocalChecked(), 
-                    New<v8::String>(msg.data.c_str()).ToLocalChecked()
+                    Nan::New<v8::String>(msg.name.c_str()).ToLocalChecked(), 
+                    Nan::New<v8::String>(msg.data.c_str()).ToLocalChecked()
                 };
                 progress->Call(2, argv);
             }
