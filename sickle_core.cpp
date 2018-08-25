@@ -12,8 +12,8 @@ class Simple: public StreamingWorker {
         std::deque<Message> messages;
         fromNode.readAll(messages);
         for (std::deque<Message>::const_iterator pi = messages.begin(); pi != messages.end(); ++ pi) {
-            puts(pi->name);
-            puts(pi->data);
+            puts(pi->name.c_str());
+            puts(pi->data.c_str());
         }
         Message tosend("integer", std::to_string(++i));
         writeToNode(progress, tosend);
