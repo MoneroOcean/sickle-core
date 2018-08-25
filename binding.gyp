@@ -6,8 +6,7 @@
                 "sickle_core.cpp",
             ],
             "include_dirs": [
-                "<!(node -e \"require('nan')\")",
-                "<!(node -e \"require('streaming-worker-sdk')\")"
+                "<!(node -e \"require('nan')\")"
             ]
         }
     ]
