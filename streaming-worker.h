@@ -110,7 +110,7 @@ class StreamingWorker: public Nan::AsyncProgressQueueWorker<char> {
       
         void HandleErrorCallback() {
             v8::Local<v8::Value> argv[] = {
-                v8::Exception::Error(New<v8::String>(ErrorMessage()).ToLocalChecked())
+                v8::Exception::Error(Nan::New<v8::String>(ErrorMessage()).ToLocalChecked())
             };
             error_callback->Call(1, argv);
         }
