@@ -91,11 +91,8 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
         }
       
         void HandleOKCallback() {
-            puts("x5");
             drainQueue();
-            puts("x6");
             callback->Call(0, NULL, async_resource);
-            puts("x7");
         }
       
         void HandleProgressCallback(const char*, size_t) {
@@ -119,7 +116,6 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             }
       
         ~AsyncWorker() {
-            puts("dddd");
             delete m_progress;
             delete m_error_callback;
         }
@@ -135,7 +131,7 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
         AsyncWorker* const m_worker;
 
         explicit AsyncWorkerWrapper(AsyncWorker* const worker) : m_worker(worker) {}
-        ~AsyncWorkerWrapper() { puts("DDDDDDDDDDDDDDD"); }
+        ~AsyncWorkerWrapper() {}
 
         static NAN_METHOD(New) {
             if (info.IsConstructCall()) {
@@ -164,13 +160,8 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
         static NAN_METHOD(sendToCpp) {
             v8::String::Utf8Value name(info[0]->ToString());
             v8::String::Utf8Value data(info[1]->ToString());
-            puts("x1");
             AsyncWorkerWrapper* const obj = Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder());
-            puts("x2");
-            printf("!!! %x\n", obj);  
-            printf("!!! %x\n", obj->m_worker);  
             obj->m_worker->fromNode.write(Message(*name, *data));
-            puts("x3");
         }
 
         static inline Nan::Persistent<v8::Function>& constructor() {
