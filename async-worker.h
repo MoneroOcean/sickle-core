@@ -101,14 +101,14 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
 
     protected:
 
-        MessageQueue<Message> fromNode;
-  
         void sendToNode(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress, const Message& msg) {
             m_toNode.write(msg);
             progress.Send(reinterpret_cast<const char*>(&m_toNode), sizeof(m_toNode));
         }
   
     public:
+
+        MessageQueue<Message> fromNode;
 
         AsyncWorker(Nan::Callback* const progress, Nan::Callback* const callback, Nan::Callback* const error_callback)
             : Nan::AsyncProgressQueueWorker<char>(callback, "sickle-core::AsyncWorker"), m_progress(progress), m_error_callback(error_callback)
