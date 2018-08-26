@@ -145,7 +145,7 @@ class Simple: public AsyncWorker {
             uint32_t nonce = 0;
             uint64_t target = 0;
             uint64_t timestamp = 0;
-            unit64_t hash_count = 0;
+            uint64_t hash_count = 0;
 
             for (unsigned i = 0; i != max_ways; ++i) ctx[i] = &ctx_mem[i];
             
