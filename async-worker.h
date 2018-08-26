@@ -75,7 +75,7 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
                     Nan::New<v8::String>(msg.name.c_str()).ToLocalChecked(), 
                     Nan::New<v8::String>(msg.data.c_str()).ToLocalChecked()
                 };
-                progress->Call(2, argv);
+                progress->Call(2, argv, async_resource);
             }
         }
 
