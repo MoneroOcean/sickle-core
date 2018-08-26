@@ -6,15 +6,18 @@
 #include <iterator>
 #include <thread>
 #include <deque>
+#include <map>
 #include <mutex>
 #include <chrono>
 #include <condition_variable>
 #include <nan.h>
 
+typedef std::map<std::string, std::string> MessageValues;
+
 struct Message {
     std::string name;
-    std::string data;
-    Message(std::string name, std::string data) : name(name), data(data){}
+    MessageValues values;
+    MessageItem(std::string name, MessageValues values) : name(name), values(values) {}
 };
 
 template<typename T> class MessageQueue {
@@ -74,9 +77,13 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             m_toNode.readAll(contents);
 
             for (Message& msg : contents) {
+                Local<Object> values = v8::Object::New(isolate);
+                for (MessageValues::const_iterator pi = msg.values.begin(); pi != msg.values.end(); ++ pi) {
+                    obj->Set(v8::String::NewFromUtf8(isolate, pi->first.c_str()), pi->second.c_str());
+                }
                 v8::Local<v8::Value> argv[] = {
-                    Nan::New<v8::String>(msg.name.c_str()).ToLocalChecked(), 
-                    Nan::New<v8::String>(msg.data.c_str()).ToLocalChecked()
+                    Nan::New<v8::String>(ErrorMessage()).ToLocalChecked(),
+                    obj.ToLocalChecked()
                 };
                 m_progress->Call(2, argv, async_resource);
             }
@@ -92,7 +99,7 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
       
         void HandleOKCallback() {
             drainQueue();
-            callback->Call(0, NULL, async_resource);
+            callback->Call(0, nullptr, async_resource);
         }
       
         void HandleProgressCallback(const char*, size_t) {
@@ -159,9 +166,17 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
 
         static NAN_METHOD(sendToCpp) {
             v8::String::Utf8Value name(info[0]->ToString());
-            v8::String::Utf8Value data(info[1]->ToString());
+            v8::Local<v8::Object> obj = info[1].As<v8::Object>();
+            MessageValues values;
+            v8::Local<v8::Array> property_names  = obj->GetOwnPropertyNames();
+            v8::Local<v8::Array> property_values = obj->GetOwnPropertyValues();
+            for (int i = 0; i < property_names->Length(); ++i) {
+                v8::String::Utf8Value key   = v8::String::Utf8Value(property_names ->Get(i));
+                v8::String::Utf8Value value = v8::String::Utf8Value(property_values->Get(i));
+                values[*key] = *value;
+            }
             AsyncWorkerWrapper* const obj = Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder());
-            obj->m_worker->fromNode.write(Message(*name, *data));
+            obj->m_worker->fromNode.write(Message(*name, values));
         }
 
         static inline Nan::Persistent<v8::Function>& constructor() {

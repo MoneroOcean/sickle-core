@@ -14,11 +14,15 @@ class Simple: public AsyncWorker {
         for (std::deque<Message>::const_iterator pi = messages.begin(); pi != messages.end(); ++ pi) {
             if (pi->name == "close") return;
             puts(pi->name.c_str());
-            puts(pi->data.c_str());
+            for (MessageValues::const_iterator pi2 = pi->values.begin(); pi2 != pi->values.end(); ++ pi2) {
+                puts(pi2->first.c_str());
+                puts(pi2->second.c_str());
+            }
         }
         if (++i % 1000000 == 0) {
-          Message tosend("integer", std::to_string(i));
-          sendToNode(progress, tosend);
+            MessageValues values;
+            values["integer"] = std::to_string(i);
+            sendToNode(progress, Message("result", values));
         }
       }
     }
