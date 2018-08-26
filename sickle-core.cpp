@@ -90,25 +90,25 @@ class Simple: public AsyncWorker {
                 fromNode.readAll(messages);
                 for (std::deque<Message>::const_iterator pi = messages.begin(); pi != messages.end(); ++ pi) {
                     if (pi->name == "job") {
-                        const std::string algo      = pi->values.at("algo");
-                        const unsigned is_soft_aes  = SOFT_AES; //pi->values.at("is_soft_aes") ? 0 : 1;
-                        const unsigned new_ways     = atoi(pi->values.at("ways").c_str());
-                        const unsigned new_mem      = atoi(pi->values.at("mem").c_str());
-                        const unsigned new_blob_len = atoi(pi->values.at("blob_len").c_str());
+                        const std::string algo        = pi->values.at("algo");
+                        const unsigned is_soft_aes    = SOFT_AES; //pi->values.at("is_soft_aes") ? 0 : 1;
+                        const unsigned new_ways       = atoi(pi->values.at("ways").c_str());
+                        const unsigned new_mem        = atoi(pi->values.at("mem").c_str());
+                        const unsigned new_blob_len   = atoi(pi->values.at("blob_len").c_str());
+                        const uint8_t* const new_blob = static_cast<const uint8_t*>(pi->values.at("blob").c_str());
                         target = atoi(pi->values.at("target").c_str());
-                        uint8_t* const new_blob     = pi->values.at("blob").c_str();
                         if (ways != new_ways || mem != new_mem) {
                             if (ways) for (int i = 0; != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
                             ways = new_ways;
                             mem  = new_mem;
-                            for (int i = 0; != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
+                            for (int i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
                         }
                         if (blob_len != new_blob_len) {
                             if (blob) free(blob); // free previous blob
                             blob_len = new_blob_len;
                             blob = static_cast<uint8_t*>(malloc(blob_len));
                         }
-                        for (int i = 0; != ways; ++i) {
+                        for (int i = 0; i != ways; ++i) {
                             memcpy(blob + blob_len*i, new_blob, blob_len);
                             nonce(blob, blob_len, i) = 0;
                         }
@@ -117,7 +117,7 @@ class Simple: public AsyncWorker {
                     } else if (pi->name == "pause") {
                         fn = nullptr;
                     } else if (pi->name == "close") {
-                        if (ways) for (int i = 0; != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory);
+                        if (ways) for (int i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory);
                         if (blob) free(blob);
                         return;
                     }
