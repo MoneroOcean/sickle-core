@@ -59,6 +59,37 @@ const std::map<std::string, cn_hash_fun> algo2fn[max_ways][2] = {
     { MAP_ALGO2FN(penta,  0), MAP_ALGO2FN(penta,  1) }
 };
 
+const std::map<std::string, unsigned> algo2mem = {
+        { "cn",                     CRYPTONIGHT_MEMORY }, 
+        { "cryptonight",            CRYPTONIGHT_MEMORY }, 
+        { "cn/0",                   CRYPTONIGHT_MEMORY }, 
+        { "cryptonight/0",          CRYPTONIGHT_MEMORY }, 
+        { "cn/1",                   CRYPTONIGHT_MEMORY }, 
+        { "cryptonight/1",          CRYPTONIGHT_MEMORY }, 
+        { "cn/xtl",                 CRYPTONIGHT_MEMORY }, 
+        { "cryptonight/xtl",        CRYPTONIGHT_MEMORY }, 
+        { "cn/msr",                 CRYPTONIGHT_MEMORY }, 
+        { "cryptonight/msr",        CRYPTONIGHT_MEMORY }, 
+        { "cn/xao",                 CRYPTONIGHT_MEMORY }, 
+        { "cryptonight/xao",        CRYPTONIGHT_MEMORY }, 
+        { "cn/rto",                 CRYPTONIGHT_MEMORY }, 
+        { "cryptonight/rto",        CRYPTONIGHT_MEMORY }, 
+        { "cn-lite",                CRYPTONIGHT_LITE_MEMORY }, 
+        { "cryptonight-lite",       CRYPTONIGHT_LITE_MEMORY }, 
+        { "cn-lite/0",              CRYPTONIGHT_LITE_MEMORY }, 
+        { "cryptonight-lite/0",     CRYPTONIGHT_LITE_MEMORY }, 
+        { "cn-lite/1",              CRYPTONIGHT_LITE_MEMORY }, 
+        { "cryptonight-lite/1",     CRYPTONIGHT_LITE_MEMORY }, 
+        { "cn-heavy",               CRYPTONIGHT_HEAVY_MEMORY }, 
+        { "cryptonight-heavy",      CRYPTONIGHT_HEAVY_MEMORY }, 
+        { "cn-heavy/0",             CRYPTONIGHT_HEAVY_MEMORY }, 
+        { "cryptonight-heavy/0",    CRYPTONIGHT_HEAVY_MEMORY }, 
+        { "cn-heavy/xhv",           CRYPTONIGHT_HEAVY_MEMORY }, 
+        { "cryptonight-heavy/xhv",  CRYPTONIGHT_HEAVY_MEMORY }, 
+        { "cn-heavy/tube",          CRYPTONIGHT_HEAVY_MEMORY }, 
+        { "cryptonight-heavy/tube", CRYPTONIGHT_HEAVY_MEMORY }
+};
+
 static inline uint32_t *nonce(uint8_t* const blob, const unsigned blob_len, const unsigned way) {
     return reinterpret_cast<uint32_t*>(blob + (way * blob_len) + 39);
 }
@@ -121,7 +152,6 @@ class Simple: public AsyncWorker {
                         const std::string algo           = pi->values.at("algo");
                         const unsigned is_soft_aes       = SOFT_AES; //pi->values.at("is_soft_aes") ? 0 : 1;
                         const unsigned new_ways          = atoi(pi->values.at("ways").c_str());
-                        const unsigned new_mem           = atoi(pi->values.at("mem").c_str());
                         const char* const new_blob_hex   = pi->values.at("blob_hex").c_str();
                         const unsigned new_blob_len      = pi->values.at("blob_hex").size();
                         const std::string new_target_str = pi->values.at("target");
@@ -159,6 +189,7 @@ class Simple: public AsyncWorker {
                             continue;
                         }
                         blob_len = new_blob_len >> 1;
+                        const unsigned new_mem = algo2mem.at(algo);
                         if (ways != new_ways || mem != new_mem) {
                             for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
                             ways = new_ways;
