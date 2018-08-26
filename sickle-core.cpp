@@ -214,7 +214,7 @@ class Simple: public AsyncWorker {
                             *p_nonce(blob, blob_len, i) = nonce++;
                         }
                         fn = pi_fn->second;
-                        printf("!!! "PRIu64"\n", target);
+                        printf("!!! %"PRIu64"\n", target);
                  
                     } else if (pi->name == "pause") {
                         fn = nullptr;
