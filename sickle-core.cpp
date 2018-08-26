@@ -88,7 +88,7 @@ class Simple: public AsyncWorker {
 
     private:
 
-        void send_error(const char* const sz) {
+        void send_error(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress, const char* const sz) {
             MessageValues values;
             values["message"] = "Bad blob hex";
             sendToNode(progress, Message("error", values));
@@ -102,6 +102,7 @@ class Simple: public AsyncWorker {
          
         void Execute(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress) {
             cn_hash_fun fn = nullptr;
+            struct cryptonight_ctx ctx_mem[max_ways] = {};
             struct cryptonight_ctx* ctx[max_ways];
             unsigned ways = 0;
             unsigned mem = 0;
@@ -110,10 +111,7 @@ class Simple: public AsyncWorker {
             uint8_t hash[max_ways * 32];
             uint64_t target = 0;
 
-            for (unsigned i = 0; i != ways; ++i) {
-                ctx[i] = static_cast<struct cryptonight_ctx*>(_mm_malloc(sizeof(struct cryptonight_ctx), 16));
-                ctx[i]->memory = nullptr;
-            }
+            for (unsigned i = 0; i != ways; ++i) ctx[i] = &ctx_mem[i];
             
             while (true) {
                 std::deque<Message> messages;
@@ -127,36 +125,42 @@ class Simple: public AsyncWorker {
                         const char* const new_blob_hex   = pi->values.at("blob_hex").c_str();
                         const unsigned new_blob_len      = atoi(pi->values.at("blob_len").c_str());
                         const std::string new_target_str = pi->values.at("target");
+
+                        const std::map<std::string, cn_hash_fun>::const_iterator pi_fn = algo2fn[ways][is_soft_aes].find(algo);
+                        if (pi_fn == algo2fn[ways][is_soft_aes].end()) {
+                            send_error(progress, "Unsupported algo");
+                            continue;
+                        }
                         if (blob_len < min_blob_len || blob_len >= max_blob_len) {
-                            send_error("Bad blob length");
+                            send_error(progress, "Bad blob length");
                             continue;
                         }
                         uint8_t blob1[max_blob_len];
                         if (!fromHex(new_blob_hex, new_blob_len << 1, blob1)) {
-                            send_error("Bad blob hex");
+                            send_error(progress, "Bad blob hex");
                             continue;
                         }
                         if (new_target_str.size() <= 8) {
                             uint32_t tmp = 0;
                             if (!fromHex(new_target_str.c_str(), 8, reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
-                                send_error("Bad target hex");
+                                send_error(progress, "Bad target hex");
                                 continue;
                             }
                             target = 0xFFFFFFFFFFFFFFFFULL / (0xFFFFFFFFULL / static_cast<uint64_t>(tmp));
                         } else if (new_target_str.size() <= 16) {
                             uint64_t tmp = 0;
                             if (!fromHex(new_target_str.c_str(), 16, reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
-                                send_error("Bad target hex");
+                                send_error(progress, "Bad target hex");
                                 continue;
                             }
                             target = tmp;
                         } else {
-                            send_error("Bad target hex");
+                            send_error(progress, "Bad target hex");
                             continue;
                         }
                         blob_len = new_blob_len;
                         if (ways != new_ways || mem != new_mem) {
-                            if (ways) for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
+                            for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
                             ways = new_ways;
                             mem  = new_mem;
                             for (unsigned i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
@@ -165,16 +169,12 @@ class Simple: public AsyncWorker {
                             memcpy(blob + blob_len*i, blob1, blob_len);
                             *nonce(blob, blob_len, i) = 0;
                         }
-                        fn = algo2fn[ways][is_soft_aes][algo];
+                        fn = *pi_fn;
                  
                     } else if (pi->name == "pause") {
                         fn = nullptr;
                     } else if (pi->name == "close") {
-                        if (ways) for (unsigned i = 0; i != ways; ++i) {
-                            if (ctx[i]->memory) _mm_free(ctx[i]->memory);
-                            _mm_free(ctx[i]);
-                        }
-                        if (blob) free(blob);
+                        for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory);
                         return;
                     }
                 }
