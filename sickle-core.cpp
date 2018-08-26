@@ -226,7 +226,7 @@ class Simple: public AsyncWorker {
                     }
                 }
                 if (fn) {
-                    if (hash_count & 0x7 == 0) {
+                    if ((hash_count & 0x7) == 0) {
                         const uint64_t new_timestamp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count();
                         if (!timestamp || new_timestamp - timestamp > 60*1000) {
                             if (timestamp) {
