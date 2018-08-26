@@ -156,7 +156,8 @@ class Simple: public AsyncWorker {
                         const unsigned new_ways          = atoi(pi->values.at("ways").c_str());
                         const std::string new_blob_str   = pi->values.at("blob_hex");
                         const char* const new_blob_hex   = new_blob_str.c_str();
-                        const unsigned new_blob_len      = new_blob_str.size();
+                        const unsigned new_blob_len2     = new_blob_str.size();
+                        const unsigned new_blob_len      = new_blob_len2 >> 1;
                         const std::string new_target_str = pi->values.at("target");
 
                         const std::map<std::string, cn_hash_fun>::const_iterator pi_fn = algo2fn[ways][is_soft_aes].find(algo);
@@ -164,12 +165,12 @@ class Simple: public AsyncWorker {
                             send_error(progress, "Unsupported algo");
                             continue;
                         }
-                        if ((new_blob_len & 1) || new_blob_len < min_blob_len || new_blob_len >= max_blob_len) {
+                        if ((new_blob_len2 & 1) || new_blob_len < min_blob_len || new_blob_len >= max_blob_len) {
                             send_error(progress, "Bad blob length");
                             continue;
                         }
                         uint8_t blob1[max_blob_len];
-                        if (!fromHex(new_blob_hex, new_blob_len >> 1, blob1)) {
+                        if (!fromHex(new_blob_hex, new_blob_len, blob1)) {
                             send_error(progress, "Bad blob hex");
                             continue;
                         }
@@ -191,7 +192,7 @@ class Simple: public AsyncWorker {
                             send_error(progress, "Bad target hex");
                             continue;
                         }
-                        blob_len = new_blob_len >> 1;
+                        blob_len = new_blob_len;
                         const unsigned new_mem = algo2mem.at(algo);
                         if (ways != new_ways || mem != new_mem) {
                             for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
