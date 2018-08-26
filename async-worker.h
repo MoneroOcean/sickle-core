@@ -160,8 +160,11 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
         static NAN_METHOD(sendToCpp) {
             v8::String::Utf8Value name(info[0]->ToString());
             v8::String::Utf8Value data(info[1]->ToString());
+            puts("x1");
             AsyncWorkerWrapper* const obj = Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder());
+            puts("x2");
             obj->m_worker->fromNode.write(Message(*name, *data));
+            puts("x3");
         }
 
         static inline Nan::Persistent<v8::Function>& constructor() {
