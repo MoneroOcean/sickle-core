@@ -77,13 +77,18 @@ class Simple: public AsyncWorker {
          
         void Execute(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress) {
             cn_hash_fun fn = nullptr;
-            struct cryptonight_ctx ctx[max_ways] = {};
+            struct cryptonight_ctx* ctx[max_ways];
             unsigned ways = 0;
             unsigned mem = 0;
             uint8_t* blob = nullptr;
             unsigned blob_len = 0;
-            uint8_t hash[max_ways * 32] = {};
+            uint8_t hash[max_ways * 32];
             uint64_t target = 0;
+
+            for (unsigned i = 0; i != ways; ++i) {
+                ctx[i] = static_cast<struct cryptonight_ctx*>(_mm_malloc(sizeof(struct cryptonight_ctx), 16));
+                ctx[i]->memory = nullptr;
+            }
             
             while (true) {
                 std::deque<Message> messages;
@@ -98,10 +103,10 @@ class Simple: public AsyncWorker {
                         const uint8_t* const new_blob = reinterpret_cast<const uint8_t*>(pi->values.at("blob").c_str());
                         target = atoi(pi->values.at("target").c_str());
                         if (ways != new_ways || mem != new_mem) {
-                            if (ways) for (unsigned i = 0; i != ways; ++i) if (ctx[i].memory) _mm_free(ctx[i].memory); // free previous ways
+                            if (ways) for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
                             ways = new_ways;
                             mem  = new_mem;
-                            for (unsigned i = 0; i != ways; ++i) ctx[i].memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
+                            for (unsigned i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
                         }
                         if (blob_len != new_blob_len) {
                             if (blob) free(blob); // free previous blob
@@ -117,13 +122,16 @@ class Simple: public AsyncWorker {
                     } else if (pi->name == "pause") {
                         fn = nullptr;
                     } else if (pi->name == "close") {
-                        if (ways) for (unsigned i = 0; i != ways; ++i) if (ctx[i].memory) _mm_free(ctx[i].memory);
+                        if (ways) for (unsigned i = 0; i != ways; ++i) {
+                            if (ctx[i]->memory) _mm_free(ctx[i]->memory);
+                            _mm_free(ctx[i]);
+                        }
                         if (blob) free(blob);
                         return;
                     }
                 }
                 if (fn) {
-                    fn(blob, blob_len, hash, &ctx[0]);
+                    fn(blob, blob_len, hash, ctx);
                     for (unsigned i = 0; i != ways; ++i) {
                         if (*result(hash, i) < target) {
                             MessageValues values;
