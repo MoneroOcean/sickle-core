@@ -119,6 +119,7 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             }
       
         ~AsyncWorker() {
+            puts("dddd");
             delete m_progress;
             delete m_error_callback;
         }
