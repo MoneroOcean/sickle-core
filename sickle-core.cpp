@@ -77,7 +77,7 @@ class Simple: public AsyncWorker {
          
         void Execute(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress) {
             cn_hash_fun fn = nullptr;
-            struct cryptonight_ctx[max_ways] ctx = { 0 };
+            struct cryptonight_ctx ctx[max_ways] = { 0 };
             unsigned ways = 0;
             unsigned mem = 0;
             uint8_t* blob = nullptr;
