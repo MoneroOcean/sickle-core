@@ -110,7 +110,7 @@ class Simple: public AsyncWorker {
                         }
                         for (unsigned i = 0; i != ways; ++i) {
                             memcpy(blob + blob_len*i, new_blob, blob_len);
-                            nonce(blob, blob_len, i) = 0;
+                            *nonce(blob, blob_len, i) = 0;
                         }
                         fn = algo2fn[ways][is_soft_aes][algo];
                  
@@ -125,12 +125,12 @@ class Simple: public AsyncWorker {
                 if (fn) {
                     fn(blob, blob_len, hash, ctx);
                     for (unsigned i = 0; i != ways; ++i) {
-                        if (result(hash, i) < target) {
+                        if (*result(hash, i) < target) {
                             MessageValues values;
-                            values["nonce"] = std::to_string(nonce(blob, blob_len, i));
+                            values["nonce"] = std::to_string(*nonce(blob, blob_len, i));
                             sendToNode(progress, Message("result", values));
                         }
-                        ++ nonce(blob, blob_len, i);
+                        ++ *nonce(blob, blob_len, i);
                     }
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(200));
