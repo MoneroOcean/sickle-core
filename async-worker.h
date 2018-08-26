@@ -91,8 +91,11 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
         }
       
         void HandleOKCallback() {
+            puts("x5");
             drainQueue();
+            puts("x6");
             callback->Call(0, NULL, async_resource);
+            puts("x7");
         }
       
         void HandleProgressCallback(const char*, size_t) {
