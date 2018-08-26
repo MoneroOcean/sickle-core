@@ -217,7 +217,6 @@ class Simple: public AsyncWorker {
                             *p_nonce(blob, blob_len, i) = nonce++;
                         }
                         fn = pi_fn->second;
-                        printf("!!! %"PRIu64"\n", target);
                  
                     } else if (pi->name == "pause") {
                         fn = nullptr;
@@ -228,11 +227,11 @@ class Simple: public AsyncWorker {
                 }
                 if (fn) {
                     if (hash_count & 0x7 == 0) {
-                        const uint64_t new_timestemp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count();
-                        if (!timestamp || new_timestemp - timestamp > 60*1000) {
+                        const uint64_t new_timestamp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count();
+                        if (!timestamp || new_timestamp - timestamp > 60*1000) {
                             if (timestamp) {
                                 MessageValues values;
-                                values["hashrate"] = std::to_string(static_cast<float>(hash_count) / (new_timestemp - timestamp) / 1000.0f);
+                                values["hashrate"] = std::to_string(static_cast<float>(hash_count) / (new_timestamp - timestamp) / 1000.0f);
                                 sendToNode(progress, Message("hashrate", values));
                             }
                             timestamp = new_timestamp;
