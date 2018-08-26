@@ -77,12 +77,12 @@ class Simple: public AsyncWorker {
          
         void Execute(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress) {
             cn_hash_fun fn = nullptr;
-            struct cryptonight_ctx ctx[max_ways] = { 0 };
+            struct cryptonight_ctx ctx[max_ways] = { 0, 0 };
             unsigned ways = 0;
             unsigned mem = 0;
             uint8_t* blob = nullptr;
             unsigned blob_len = 0;
-            uint8_t hash[max_way * 32] = { 0 };
+            uint8_t hash[max_ways * 32] = { 0 };
             uint64_t target = 0;
             
             while (true) {
