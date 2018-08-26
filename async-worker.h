@@ -107,12 +107,12 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             v8::Local<v8::Value> argv[] = {
                 v8::Exception::Error(Nan::New<v8::String>(ErrorMessage()).ToLocalChecked())
             };
-            Nan::Call(error_callback, 1, argv);
+            error_callback->Call(1, argv, async_resource);
         }
       
         void HandleOKCallback() {
             drainQueue();
-            callback->Call(0, NULL);
+            callback->Call(0, NULL, async_resource);
         }
       
         void HandleProgressCallback(const char* data, size_t size) {
