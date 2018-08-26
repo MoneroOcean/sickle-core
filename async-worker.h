@@ -11,103 +11,83 @@
 #include <condition_variable>
 #include <nan.h>
 
-template<typename Data> class PCQueue {
-
-    private:
-
-        std::mutex mu;
-        std::condition_variable cond;
-        std::deque<Data> buffer_;
-
-    public:
-
-        void write(Data data) {
-            while (true) {
-                std::unique_lock<std::mutex> locker(mu);
-                buffer_.push_back(data);
-                locker.unlock();
-                cond.notify_all();
-                return;
-            }
-        }
-
-        Data read() {
-            while (true)
-            {
-                std::unique_lock<std::mutex> locker(mu);
-                cond.wait(locker, [this]() {
-                    return buffer_.size() > 0;
-                });
-                Data back = buffer_.front();
-                buffer_.pop_front();
-                locker.unlock();
-                cond.notify_all();
-                return back;
-            }
-        }
-
-        void readAll(std::deque<Data> & target) {
-            std::unique_lock<std::mutex> locker(mu);
-            std::copy(buffer_.begin(), buffer_.end(), std::back_inserter(target));
-            buffer_.clear();
-            locker.unlock();
-        }
-};
-
 struct Message {
     std::string name;
     std::string data;
     Message(std::string name, std::string data) : name(name), data(data){}
 };
 
+template<typename T> class MessageQueue {
+
+    private:
+
+        std::mutex              m_mutex;
+        std::condition_variable m_cond;
+        std::deque<T>           m_buff;
+
+    public:
+
+        void write(T data) {
+            while (true) {
+                std::unique_lock<std::mutex> locker(m_mutex);
+                m_buff.push_back(data);
+                locker.unlock();
+                m_cond.notify_all();
+                return;
+            }
+        }
+
+        T read() {
+            while (true)
+            {
+                std::unique_lock<std::mutex> locker(m_mutex);
+                m_cond.wait(locker, [this]() {
+                    return m_buff.size() > 0;
+                });
+                T back = m_buff.front();
+                m_buff.pop_front();
+                locker.unlock();
+                m_cond.notify_all();
+                return back;
+            }
+        }
+
+        void readAll(std::deque<T>& target) {
+            std::unique_lock<std::mutex> locker(m_mutex);
+            std::copy(m_buff.begin(), m_buff.end(), std::back_inserter(target));
+            m_buff.clear();
+            locker.unlock();
+        }
+};
+
 class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
 
     private:
 
+        Nan::Callback* const  m_progress;
+        Nan::Callback* const  m_error_callback;
+        MessageQueue<Message> m_toNode;
+
         void drainQueue() {
             Nan::HandleScope scope;
-            // drain the queue - since we might only get called once for many writes
             std::deque<Message> contents;
-            toNode.readAll(contents);
+            m_toNode.readAll(contents);
 
             for (Message& msg : contents) {
                 v8::Local<v8::Value> argv[] = {
                     Nan::New<v8::String>(msg.name.c_str()).ToLocalChecked(), 
                     Nan::New<v8::String>(msg.data.c_str()).ToLocalChecked()
                 };
-                progress->Call(2, argv, async_resource);
+                m_progress->Call(2, argv, async_resource);
             }
         }
 
-    protected:
-  
-        void sendToNode(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress, const Message& msg) {
-            toNode.write(msg);
-            progress.Send(reinterpret_cast<const char*>(&toNode), sizeof(toNode));
-        }
-  
-        Nan::Callback* progress;
-        Nan::Callback* error_callback;
-        PCQueue<Message> toNode;
-
-    public:
-
-        AsyncWorker(Nan::Callback* progress, Nan::Callback* callback, Nan::Callback* error_callback)
-            : Nan::AsyncProgressQueueWorker<char>(callback, "sickle-core::AsyncWorker"), progress(progress), error_callback(error_callback)
-            {
-            }
-      
-        ~AsyncWorker() {
-            delete progress;
-            delete error_callback;
-        }
-      
         void HandleErrorCallback() {
             Nan::HandleScope scope;
             v8::Local<v8::Value> argv[] = {
                 v8::Exception::Error(Nan::New<v8::String>(ErrorMessage()).ToLocalChecked())
             };
-            error_callback->Call(1, argv, async_resource);
+            m_error_callback->Call(1, argv, async_resource);
         }
       
         void HandleOKCallback() {
@@ -115,41 +95,63 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             callback->Call(0, NULL, async_resource);
         }
       
-        void HandleProgressCallback(const char* data, size_t size) {
+        void HandleProgressCallback(const char*, size_t) {
             drainQueue();
         }
+
+    protected:
+
+        MessageQueue<Message> fromNode;
+  
+        void sendToNode(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress, const Message& msg) {
+            m_toNode.write(msg);
+            progress.Send(reinterpret_cast<const char*>(&m_toNode), sizeof(m_toNode));
+        }
+  
+    public:
+
+        AsyncWorker(Nan::Callback* const progress, Nan::Callback* const callback, Nan::Callback* const error_callback)
+            : Nan::AsyncProgressQueueWorker<char>(callback, "sickle-core::AsyncWorker"), m_progress(progress), m_error_callback(error_callback)
+            {
+            }
       
-        PCQueue<Message> fromNode;
+        ~AsyncWorker() {
+            delete m_progress;
+            delete m_error_callback;
+        }
+      
 };
 
 AsyncWorker* create_worker(Nan::Callback*, Nan::Callback*, Nan::Callback*, v8::Local<v8::Object>&);
 
-class StreamWorkerWrapper: public Nan::ObjectWrap {
+class AsyncWorkerWrapper: public Nan::ObjectWrap {
 
     private:
 
-        explicit StreamWorkerWrapper(AsyncWorker * worker) : _worker(worker) {}
-        ~StreamWorkerWrapper() {}
+        AsyncWorker* const m_worker;
+
+        explicit AsyncWorkerWrapper(AsyncWorker* const worker) : m_worker(worker) {}
+        ~AsyncWorkerWrapper() {}
 
         static NAN_METHOD(New) {
             if (info.IsConstructCall()) {
-                Nan::Callback *data_callback       = new Nan::Callback(info[0].As<v8::Function>());
-                Nan::Callback *complete_callback   = new Nan::Callback(info[1].As<v8::Function>());
-                Nan::Callback *error_callback      = new Nan::Callback(info[2].As<v8::Function>());
-                v8::Local<v8::Object> options = info[3].As<v8::Object>();
+                Nan::Callback* const data_callback     = new Nan::Callback(info[0].As<v8::Function>());
+                Nan::Callback* const complete_callback = new Nan::Callback(info[1].As<v8::Function>());
+                Nan::Callback* const error_callback    = new Nan::Callback(info[2].As<v8::Function>());
+                v8::Local<v8::Object> options          = info[3].As<v8::Object>();
 
-                StreamWorkerWrapper *obj = new StreamWorkerWrapper(create_worker(data_callback, complete_callback, error_callback, options));
+                AsyncWorkerWrapper* const obj = new AsyncWorkerWrapper(create_worker(data_callback, complete_callback, error_callback, options));
       
                 obj->Wrap(info.This());
                 info.GetReturnValue().Set(info.This());
 
                 // start the worker
-                AsyncQueueWorker(obj->_worker);
+                AsyncQueueWorker(obj->m_worker);
 
             } else {
                 const int argc = 3;
-                v8::Local<v8::Value> argv[argc] = {info[0], info[1], info[2]};
-                v8::Local<v8::Function> cons = Nan::New(constructor());
+                v8::Local<v8::Value> argv[argc] = { info[0], info[1], info[2] };
+                v8::Local<v8::Function> cons   = Nan::New(constructor());
                 v8::Local<v8::Object> instance = Nan::NewInstance(cons, argc, argv).ToLocalChecked();
                 info.GetReturnValue().Set(instance);
             }
@@ -158,16 +160,14 @@ class StreamWorkerWrapper: public Nan::ObjectWrap {
         static NAN_METHOD(sendToCpp) {
             v8::String::Utf8Value name(info[0]->ToString());
             v8::String::Utf8Value data(info[1]->ToString());
-            StreamWorkerWrapper* obj = Nan::ObjectWrap::Unwrap<StreamWorkerWrapper>(info.Holder());
-            obj->_worker->fromNode.write(Message(*name, *data));
+            AsyncWorkerWrapper* const obj = Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder());
+            obj->m_worker->fromNode.write(Message(*name, *data));
         }
 
-        static inline Nan::Persistent<v8::Function> & constructor() {
+        static inline Nan::Persistent<v8::Function>& constructor() {
             static Nan::Persistent<v8::Function> my_constructor;
             return my_constructor;
         }
-
-        AsyncWorker * _worker;
 
     public:
 
