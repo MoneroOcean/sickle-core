@@ -90,11 +90,11 @@ const std::map<std::string, unsigned> algo2mem = {
         { "cryptonight-heavy/tube", xmrig::CRYPTONIGHT_HEAVY_MEMORY }
 };
 
-static inline uint32_t *nonce(uint8_t* const blob, const unsigned blob_len, const unsigned way) {
+static inline uint32_t *p_nonce(uint8_t* const blob, const unsigned blob_len, const unsigned way) {
     return reinterpret_cast<uint32_t*>(blob + (way * blob_len) + 39);
 }
 
-inline static uint64_t *result(uint8_t* const hash, const unsigned way) {
+inline static uint64_t *p_result(uint8_t* const hash, const unsigned way) {
     return reinterpret_cast<uint64_t*>(hash + (way * 32) + 24);
 }
 
@@ -208,7 +208,7 @@ class Simple: public AsyncWorker {
                         nonce = 0;
                         for (unsigned i = 0; i != ways; ++i) {
                             memcpy(blob + blob_len*i, blob1, blob_len);
-                            *nonce(blob, blob_len, i) = nonce++;
+                            *p_nonce(blob, blob_len, i) = nonce++;
                         }
                         puts("XXXX1");
                         fn = pi_fn->second;
@@ -226,12 +226,12 @@ class Simple: public AsyncWorker {
                     fn(blob, blob_len, hash, ctx);
                         puts("FFFFFFFFF");
                     for (unsigned i = 0; i != ways; ++i) {
-                        if (*result(hash, i) < target) {
+                        if (*p_result(hash, i) < target) {
                             MessageValues values;
                             values["nonce"] = std::to_string(*nonce(blob, blob_len, i));
                             sendToNode(progress, Message("result", values));
                         }
-                        *nonce(blob, blob_len, i) = nonce++;
+                        *p_nonce(blob, blob_len, i) = nonce++;
                     }
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(200));
