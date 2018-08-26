@@ -192,27 +192,19 @@ class Simple: public AsyncWorker {
                             continue;
                         }
                         blob_len = new_blob_len;
-                        puts("XXXX3");
                         const unsigned new_mem = algo2mem.at(algo);
-                        puts("XXXX5");
                         if (ways != new_ways || mem != new_mem) {
                             for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
-                        puts("XXXX7");
                             ways = new_ways;
-                             printf("!!! %i\n", new_ways);
-                             printf("!!! %i\n", new_mem);
                             mem  = new_mem;
                             for (unsigned i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
                         }
-                        puts("XXXX2");
                         nonce = 0;
                         for (unsigned i = 0; i != ways; ++i) {
                             memcpy(blob + blob_len*i, blob1, blob_len);
                             *p_nonce(blob, blob_len, i) = nonce++;
                         }
-                        puts("XXXX1");
                         fn = pi_fn->second;
-                        puts("XXXX");
                  
                     } else if (pi->name == "pause") {
                         fn = nullptr;
@@ -222,9 +214,7 @@ class Simple: public AsyncWorker {
                     }
                 }
                 if (fn) {
-                        puts("ZZZZZzz");
                     fn(blob, blob_len, hash, ctx);
-                        puts("FFFFFFFFF");
                     for (unsigned i = 0; i != ways; ++i) {
                         uint32_t* const pnonce = p_nonce(blob, blob_len, i);
                         if (*p_result(hash, i) < target) {
