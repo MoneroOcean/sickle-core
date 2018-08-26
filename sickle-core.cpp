@@ -107,10 +107,8 @@ static inline unsigned char hf_hex2bin(const char c, bool& err) {
 }
 
 static bool fromHex(const char* in, unsigned int len, unsigned char* out) {
-    printf("!!! %i\n", len);
     bool error = false;
     for (unsigned int i = 0; i < len; ++i, ++out, in += 2) {
-        printf("!!! %c %c\n", *in, *(in + 1));
         *out = (hf_hex2bin(*in, error) << 4) | hf_hex2bin(*(in + 1), error);
         if (error) return false;
     }
@@ -205,6 +203,7 @@ class Simple: public AsyncWorker {
                             *nonce(blob, blob_len, i) = 0;
                         }
                         fn = pi_fn->second;
+                        puts("XXXX");
                  
                     } else if (pi->name == "pause") {
                         fn = nullptr;
@@ -214,7 +213,9 @@ class Simple: public AsyncWorker {
                     }
                 }
                 if (fn) {
+                        puts("ZZZZZzz");
                     fn(blob, blob_len, hash, ctx);
+                        puts("FFFFFFFFF");
                     for (unsigned i = 0; i != ways; ++i) {
                         if (*result(hash, i) < target) {
                             MessageValues values;
