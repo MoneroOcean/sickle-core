@@ -169,11 +169,11 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
             v8::Local<v8::Object> obj = info[1].As<v8::Object>();
             MessageValues values;
             v8::Local<v8::Array> property_names  = obj->GetOwnPropertyNames();
-            v8::Local<v8::Array> property_values = obj->GetOwnPropertyValues();
-            for (int i = 0; i < property_names->Length(); ++i) {
-                v8::String::Utf8Value key   = v8::String::Utf8Value(property_names ->Get(i));
-                v8::String::Utf8Value value = v8::String::Utf8Value(property_values->Get(i));
-                values[*key] = *value;
+            for (unsigned i = 0; i < property_names->Length(); ++i) {
+                v8::Local<v8::Value> key = property_names->Get(i);
+                v8::String::Utf8Value key2  = v8::String::Utf8Value(key);
+                v8::String::Utf8Value value = v8::String::Utf8Value(obj->Get(key));
+                values[*key2] = *value;
             }
             AsyncWorkerWrapper* const obj = Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder());
             obj->m_worker->fromNode.write(Message(*name, values));
