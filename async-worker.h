@@ -17,7 +17,7 @@ typedef std::map<std::string, std::string> MessageValues;
 struct Message {
     std::string name;
     MessageValues values;
-    MessageItem(std::string name, MessageValues values) : name(name), values(values) {}
+    Message(std::string name, MessageValues values) : name(name), values(values) {}
 };
 
 template<typename T> class MessageQueue {
