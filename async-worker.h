@@ -175,8 +175,7 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
                 const v8::String::Utf8Value value(obj->Get(key)->ToString());
                 values[*key2] = *value;
             }
-            AsyncWorkerWrapper* const obj = Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder());
-            obj->m_worker->fromNode.write(Message(*name, values));
+            Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder())->m_worker->fromNode.write(Message(*name, values));
         }
 
         static inline Nan::Persistent<v8::Function>& constructor() {
