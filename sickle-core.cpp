@@ -12,6 +12,7 @@ class Simple: public AsyncWorker {
         std::deque<Message> messages;
         fromNode.readAll(messages);
         for (std::deque<Message>::const_iterator pi = messages.begin(); pi != messages.end(); ++ pi) {
+            if (pi->name == "close") return;
             puts(pi->name.c_str());
             puts(pi->data.c_str());
         }
