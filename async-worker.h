@@ -76,13 +76,13 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             std::deque<Message> contents;
             m_toNode.readAll(contents);
 
-            for (Message& msg : contents) {
+            for (const Message& msg : contents) {
                 v8::Local<v8::Object> values = v8::Object::New(v8::Isolate::GetCurrent());
                 for (MessageValues::const_iterator pi = msg.values.begin(); pi != msg.values.end(); ++ pi) {
-                    values->Set(v8::String::NewFromUtf8(pi->first.c_str()), pi->second.c_str());
+                    values->Set(Nan::New<v8::String>(pi->first.c_str()).ToLocalChecked(), Nan::New<v8::String>(pi->second.c_str()).ToLocalChecked());
                 }
                 v8::Local<v8::Value> argv[] = {
-                    Nan::New<v8::String>(ErrorMessage()).ToLocalChecked(),
+                    Nan::New<v8::String>(msg.name.c_str()).ToLocalChecked(),
                     values.ToLocalChecked()
                 };
                 m_progress->Call(2, argv, async_resource);
