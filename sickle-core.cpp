@@ -95,10 +95,10 @@ class Simple: public AsyncWorker {
                         const unsigned new_ways       = atoi(pi->values.at("ways").c_str());
                         const unsigned new_mem        = atoi(pi->values.at("mem").c_str());
                         const unsigned new_blob_len   = atoi(pi->values.at("blob_len").c_str());
-                        const uint8_t* const new_blob = static_cast<const uint8_t*>(pi->values.at("blob").c_str());
+                        const uint8_t* const new_blob = reinterpret_cast<const uint8_t*>(pi->values.at("blob").c_str());
                         target = atoi(pi->values.at("target").c_str());
                         if (ways != new_ways || mem != new_mem) {
-                            if (ways) for (int i = 0; != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
+                            if (ways) for (int i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
                             ways = new_ways;
                             mem  = new_mem;
                             for (int i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
@@ -124,7 +124,7 @@ class Simple: public AsyncWorker {
                 }
                 if (fn) {
                     fn(blob, blob_len, hash, ctx);
-                    for (int i = 0; != ways; ++i) {
+                    for (int i = 0; i != ways; ++i) {
                         if (result(hash, i) < target) {
                             MessageValues values;
                             values["nonce"] = std::to_string(nonce(blob, blob_len, i));
