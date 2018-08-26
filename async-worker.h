@@ -166,6 +166,8 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
             puts("x1");
             AsyncWorkerWrapper* const obj = Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder());
             puts("x2");
+            printf("!!! %x\n", obj);  
+            printf("!!! %x\n", obj->m_worker);  
             obj->m_worker->fromNode.write(Message(*name, *data));
             puts("x3");
         }
