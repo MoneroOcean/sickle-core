@@ -140,9 +140,10 @@ class Simple: public AsyncWorker {
             uint8_t blob[max_ways * max_blob_len];
             unsigned blob_len = 0;
             uint8_t hash[max_ways * 32];
+            uint32_t nonce = 0;
             uint64_t target = 0;
 
-            for (unsigned i = 0; i != ways; ++i) ctx[i] = &ctx_mem[i];
+            for (unsigned i = 0; i != max_ways; ++i) ctx[i] = &ctx_mem[i];
             
             while (true) {
                 std::deque<Message> messages;
@@ -204,9 +205,10 @@ class Simple: public AsyncWorker {
                             for (unsigned i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
                         }
                         puts("XXXX2");
+                        nonce = 0;
                         for (unsigned i = 0; i != ways; ++i) {
                             memcpy(blob + blob_len*i, blob1, blob_len);
-                            *nonce(blob, blob_len, i) = 0;
+                            *nonce(blob, blob_len, i) = nonce++;
                         }
                         puts("XXXX1");
                         fn = pi_fn->second;
@@ -229,7 +231,7 @@ class Simple: public AsyncWorker {
                             values["nonce"] = std::to_string(*nonce(blob, blob_len, i));
                             sendToNode(progress, Message("result", values));
                         }
-                        ++ *nonce(blob, blob_len, i);
+                        *nonce(blob, blob_len, i) = nonce++;
                     }
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(200));
