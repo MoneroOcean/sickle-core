@@ -77,7 +77,7 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             m_toNode.readAll(contents);
 
             for (Message& msg : contents) {
-                Local<Object> values = v8::Object::New(isolate);
+                v8::Local<Object> values = v8::Object::New(isolate);
                 for (MessageValues::const_iterator pi = msg.values.begin(); pi != msg.values.end(); ++ pi) {
                     obj->Set(v8::String::NewFromUtf8(isolate, pi->first.c_str()), pi->second.c_str());
                 }
