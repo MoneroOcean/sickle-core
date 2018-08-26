@@ -107,7 +107,7 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             v8::Local<v8::Value> argv[] = {
                 v8::Exception::Error(Nan::New<v8::String>(ErrorMessage()).ToLocalChecked())
             };
-            error_callback->Call(1, argv);
+            Nan::Call(error_callback, 1, argv);
         }
       
         void HandleOKCallback() {
