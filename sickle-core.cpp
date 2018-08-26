@@ -77,12 +77,12 @@ class Simple: public AsyncWorker {
          
         void Execute(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress) {
             cn_hash_fun fn = nullptr;
-            struct cryptonight_ctx ctx[max_ways] = { 0, 0 };
+            struct cryptonight_ctx ctx[max_ways] = {};
             unsigned ways = 0;
             unsigned mem = 0;
             uint8_t* blob = nullptr;
             unsigned blob_len = 0;
-            uint8_t hash[max_ways * 32] = { 0 };
+            uint8_t hash[max_ways * 32] = {};
             uint64_t target = 0;
             
             while (true) {
@@ -90,13 +90,13 @@ class Simple: public AsyncWorker {
                 fromNode.readAll(messages);
                 for (std::deque<Message>::const_iterator pi = messages.begin(); pi != messages.end(); ++ pi) {
                     if (pi->name == "job") {
-                        const std::string algo      = pi->values["algo"];
-                        const unsigned is_soft_aes  = SOFT_AES; //pi->values["is_soft_aes"] ? 0 : 1;
-                        const unsigned new_ways     = atoi(pi->values["ways"].c_str());
-                        const unsigned new_mem      = atoi(pi->values["mem"].c_str());
-                        const unsigned new_blob_len = atoi(pi->values["blob_len"].c_str());
-                        target = atoi(pi->values["target"].c_str());
-                        uint8_t* const new_blob     = pi->values["blob"].c_str();
+                        const std::string algo      = pi->values.at("algo");
+                        const unsigned is_soft_aes  = SOFT_AES; //pi->values.at("is_soft_aes") ? 0 : 1;
+                        const unsigned new_ways     = atoi(pi->values.at("ways").c_str());
+                        const unsigned new_mem      = atoi(pi->values.at("mem").c_str());
+                        const unsigned new_blob_len = atoi(pi->values.at("blob_len").c_str());
+                        target = atoi(pi->values.at("target").c_str());
+                        uint8_t* const new_blob     = pi->values.at("blob").c_str();
                         if (ways != new_ways || mem != new_mem) {
                             if (ways) for (int i = 0; != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
                             ways = new_ways;
