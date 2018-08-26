@@ -107,8 +107,10 @@ static inline unsigned char hf_hex2bin(const char c, bool& err) {
 }
 
 static bool fromHex(const char* in, unsigned int len, unsigned char* out) {
+    printf("!!! %i\n", len);
     bool error = false;
     for (unsigned int i = 0; i < len; ++i, ++out, in += 2) {
+        printf("!!! %c %c\n", *in, *(in + 1));
         *out = (hf_hex2bin(*in, error) << 4) | hf_hex2bin(*(in + 1), error);
         if (error) return false;
     }
@@ -152,8 +154,9 @@ class Simple: public AsyncWorker {
                         const std::string algo           = pi->values.at("algo");
                         const unsigned is_soft_aes       = SOFT_AES; //pi->values.at("is_soft_aes") ? 0 : 1;
                         const unsigned new_ways          = atoi(pi->values.at("ways").c_str());
-                        const char* const new_blob_hex   = pi->values.at("blob_hex").c_str();
-                        const unsigned new_blob_len      = pi->values.at("blob_hex").size();
+                        const std::string new_blob_str   = pi->values.at("blob_hex");
+                        const char* const new_blob_hex   = new_blob_str.c_str();
+                        const unsigned new_blob_len      = new_blob_str.size();
                         const std::string new_target_str = pi->values.at("target");
 
                         const std::map<std::string, cn_hash_fun>::const_iterator pi_fn = algo2fn[ways][is_soft_aes].find(algo);
@@ -170,16 +173,16 @@ class Simple: public AsyncWorker {
                             send_error(progress, "Bad blob hex");
                             continue;
                         }
-                        if (new_target_str.size() <= 8) {
+                        if (new_target_str.size() <= sizeof(uint32_t)*2) {
                             uint32_t tmp = 0;
-                            if (!fromHex(new_target_str.c_str(), 8, reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
+                            if (!fromHex(new_target_str.c_str(), sizeof(uint32_t), reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
                                 send_error(progress, "Bad target hex");
                                 continue;
                             }
                             target = 0xFFFFFFFFFFFFFFFFULL / (0xFFFFFFFFULL / static_cast<uint64_t>(tmp));
-                        } else if (new_target_str.size() <= 16) {
+                        } else if (new_target_str.size() <= sizeof(uint64_t)*2) {
                             uint64_t tmp = 0;
-                            if (!fromHex(new_target_str.c_str(), 16, reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
+                            if (!fromHex(new_target_str.c_str(), sizeof(uint64_t), reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
                                 send_error(progress, "Bad target hex");
                                 continue;
                             }
