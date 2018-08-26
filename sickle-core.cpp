@@ -239,6 +239,7 @@ class Simple: public AsyncWorker {
                                 sendToNode(progress, Message("hashrate", values));
                             }
                             timestamp = new_timestamp;
+                            hash_count = 0;
                         }
                     }
                     fn(blob, blob_len, hash, ctx);
