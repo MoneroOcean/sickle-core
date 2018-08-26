@@ -235,7 +235,7 @@ class Simple: public AsyncWorker {
                         if (!timestamp || new_timestamp - timestamp > 60*1000) {
                             if (timestamp) {
                                 MessageValues values;
-                                values["hashrate"] = std::to_string(static_cast<float>(ways) * static_cast<float>(hash_count) / (new_timestamp - timestamp) / 1000.0f);
+                                values["hashrate"] = std::to_string(static_cast<float>(ways) * static_cast<float>(hash_count) / (new_timestamp - timestamp) * 1000.0f);
                                 sendToNode(progress, Message("hashrate", values));
                             }
                             timestamp = new_timestamp;
