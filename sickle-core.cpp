@@ -123,7 +123,7 @@ class Simple: public AsyncWorker {
 
         void send_error(const AsyncProgressQueueWorker<char>::ExecutionProgress& progress, const char* const sz) {
             MessageValues values;
-            values["message"] = "Bad blob hex";
+            values["message"] = sz;
             sendToNode(progress, Message("error", values));
         }
 
