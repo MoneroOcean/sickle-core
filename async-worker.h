@@ -77,9 +77,9 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             m_toNode.readAll(contents);
 
             for (const Message& msg : contents) {
-                auto values = Nan::New<v8::Object>();
+                v8::Local<v8::Object> values = Nan::New<v8::Object>();
                 for (MessageValues::const_iterator pi = msg.values.begin(); pi != msg.values.end(); ++ pi) {
-                    values->Set(Nan::New<v8::String>(pi->first.c_str()), Nan::New<v8::String>(pi->second.c_str()).ToLocalChecked());
+                    values->Set(Nan::New<v8::String>(pi->first.c_str()).ToLocalChecked(), Nan::New<v8::String>(pi->second.c_str()).ToLocalChecked());
                 }
                 v8::Local<v8::Value> argv[] = {
                     Nan::New<v8::String>(msg.name.c_str()).ToLocalChecked(),
@@ -168,7 +168,7 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
             const v8::String::Utf8Value name(info[0]->ToString());
             const v8::Local<v8::Object> obj = info[1].As<v8::Object>();
             MessageValues values;
-            v8::Local<v8::Array> property_names = obj->GetOwnPropertyNames();
+            const v8::Local<v8::Array> property_names = obj->GetOwnPropertyNames();
             for (unsigned i = 0; i < property_names->Length(); ++i) {
                 const v8::Local<v8::Value>  key = property_names->Get(i);
                 const v8::String::Utf8Value key2(key->ToString());
