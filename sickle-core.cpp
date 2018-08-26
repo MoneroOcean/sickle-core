@@ -226,12 +226,13 @@ class Simple: public AsyncWorker {
                     fn(blob, blob_len, hash, ctx);
                         puts("FFFFFFFFF");
                     for (unsigned i = 0; i != ways; ++i) {
+                        uint32_t* const pnonce = p_nonce(blob, blob_len, i);
                         if (*p_result(hash, i) < target) {
                             MessageValues values;
-                            values["nonce"] = std::to_string(*nonce(blob, blob_len, i));
+                            values["nonce"] = std::to_string(*pnonce);
                             sendToNode(progress, Message("result", values));
                         }
-                        *p_nonce(blob, blob_len, i) = nonce++;
+                        *pnonce = nonce++;
                     }
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(200));
