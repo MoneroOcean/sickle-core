@@ -169,7 +169,7 @@ class Simple: public AsyncWorker {
                             memcpy(blob + blob_len*i, blob1, blob_len);
                             *nonce(blob, blob_len, i) = 0;
                         }
-                        fn = *pi_fn;
+                        fn = pi_fn->second;
                  
                     } else if (pi->name == "pause") {
                         fn = nullptr;
