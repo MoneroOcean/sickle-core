@@ -17,6 +17,7 @@
 const unsigned max_ways = 5;
 const unsigned min_blob_len = 76;
 const unsigned max_blob_len = 96;
+const unsigned hash_len = 32;
 
 typedef void (*cn_hash_fun)(const uint8_t *blob, size_t size, uint8_t *output, cryptonight_ctx **ctx);
 
@@ -95,7 +96,7 @@ static inline uint32_t *p_nonce(uint8_t* const blob, const unsigned blob_len, co
 }
 
 inline static uint64_t *p_result(uint8_t* const hash, const unsigned way) {
-    return reinterpret_cast<uint64_t*>(hash + (way * 32) + 24);
+    return reinterpret_cast<uint64_t*>(hash + (way * hash_len) + 24);
 }
 
 static inline unsigned char hf_hex2bin(const char c, bool& err) {
@@ -139,7 +140,7 @@ class Simple: public AsyncWorker {
             unsigned mem = 0;
             uint8_t blob[max_ways * max_blob_len];
             unsigned blob_len = 0;
-            uint8_t hash[max_ways * 32];
+            uint8_t hash[max_ways * hash_len];
             uint32_t nonce = 0;
             uint64_t target = 0;
 
@@ -175,14 +176,18 @@ class Simple: public AsyncWorker {
                         }
                         if (new_target_str.size() <= sizeof(uint32_t)*2) {
                             uint32_t tmp = 0;
-                            if (!fromHex(new_target_str.c_str(), sizeof(uint32_t), reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
+                            char str[sizeof(uint32_t)*2 + 1] = "00000000";
+                            memcpy(str, new_target_str.c_str(), new_target_str.size());
+                            if (!fromHex(str, sizeof(uint32_t), reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
                                 send_error(progress, "Bad target hex");
                                 continue;
                             }
                             target = 0xFFFFFFFFFFFFFFFFULL / (0xFFFFFFFFULL / static_cast<uint64_t>(tmp));
                         } else if (new_target_str.size() <= sizeof(uint64_t)*2) {
                             uint64_t tmp = 0;
-                            if (!fromHex(new_target_str.c_str(), sizeof(uint64_t), reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
+                            char str[sizeof(uint64_t)*2 + 1] = "0000000000000000";
+                            memcpy(str, new_target_str.c_str(), new_target_str.size());
+                            if (!fromHex(str, sizeof(uint64_t), reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
                                 send_error(progress, "Bad target hex");
                                 continue;
                             }
@@ -194,7 +199,11 @@ class Simple: public AsyncWorker {
                         blob_len = new_blob_len;
                         const unsigned new_mem = algo2mem.at(algo);
                         if (ways != new_ways || mem != new_mem) {
-                            for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
+                            // free previous ways
+                            for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) {
+                                _mm_free(ctx[i]->memory);
+                                ctx[i]->memory = nullptr;
+                            }
                             ways = new_ways;
                             mem  = new_mem;
                             for (unsigned i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
