@@ -233,10 +233,12 @@ class Simple: public AsyncWorker {
                         printf("!!! %" PRIu64 "\n", new_timestamp);
                         if (!timestamp || new_timestamp - timestamp > 60*1000) {
                             if (timestamp) {
+puts("ddddddddddd");
                                 MessageValues values;
                                 values["hashrate"] = std::to_string(static_cast<float>(ways) * static_cast<float>(hash_count) / (new_timestamp - timestamp) / 1000.0f);
                                 sendToNode(progress, Message("hashrate", values));
                             }
+puts("xxxxxxxxxx");
                             timestamp = new_timestamp;
                         }
                     }
