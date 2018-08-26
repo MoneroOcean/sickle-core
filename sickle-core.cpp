@@ -123,7 +123,7 @@ class Simple: public AsyncWorker {
                     }
                 }
                 if (fn) {
-                    fn(blob, blob_len, hash, &ctx);
+                    fn(blob, blob_len, hash, &ctx[0]);
                     for (unsigned i = 0; i != ways; ++i) {
                         if (*result(hash, i) < target) {
                             MessageValues values;
