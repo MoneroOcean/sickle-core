@@ -1,2 +1,2 @@
-# sickle_core
+# sickle-core
 Some experimental development using Node.js and SYCL

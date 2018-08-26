@@ -1,9 +1,9 @@
 {
     "targets": [
         {
-            "target_name": "sickle_core",
+            "target_name": "sickle-core",
             "sources": [
-                "sickle_core.cpp",
+                "sickle-core.cpp",
             ],
             "include_dirs": [
                 "<!(node -e \"require('nan')\")"

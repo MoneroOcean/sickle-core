@@ -93,7 +93,7 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
     public:
 
         AsyncWorker(Nan::Callback* progress, Nan::Callback* callback, Nan::Callback* error_callback)
-            : Nan::AsyncProgressQueueWorker<char>(callback), progress(progress), error_callback(error_callback)
+            : Nan::AsyncProgressQueueWorker<char>(callback, "sickle-core::AsyncWorker"), progress(progress), error_callback(error_callback)
             {
             }
       

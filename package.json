@@ -1,14 +1,14 @@
 {
-    "name":    "sickle_core",
+    "name":    "sickle-core",
     "version": "0.0.1",
-    "main":    "sickle_core",
+    "main":    "sickle-core",
     "author": {
         "name":  "MoneroOcean",
         "email": "support@moneroocean.stream"
     },
     "repository": {
         "type": "git",
-        "url":  "https://github.com/MoneroOcean/sickle_core.git"
+        "url":  "https://github.com/MoneroOcean/sickle-core.git"
     },
     "dependencies": {
         "bindings": "*",
