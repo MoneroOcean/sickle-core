@@ -19,34 +19,34 @@ const unsigned max_ways = 5;
 typedef void (*cn_hash_fun)(const uint8_t *blob, size_t size, uint8_t *output, cryptonight_ctx **ctx);
 
 #define MAP_ALGO2FN(hash, soft_aes) {\
-        { "cn",                     cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_1> },\
-        { "cryptonight",            cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_1> },\
-        { "cn/0",                   cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_0> },\
-        { "cryptonight/0",          cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_0> },\
-        { "cn/1",                   cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_1> },\
-        { "cryptonight/1",          cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_1> },\
-        { "cn/xtl",                 cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_XTL> },\
-        { "cryptonight/xtl",        cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_XTL> },\
-        { "cn/msr",                 cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_MSR> },\
-        { "cryptonight/msr",        cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_MSR> },\
-        { "cn/xao",                 cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_XAO> },\
-        { "cryptonight/xao",        cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_XAO> },\
-        { "cn/rto",                 cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_RTO> },\
-        { "cryptonight/rto",        cryptonight_##hash_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_RTO> },\
-        { "cn-lite",                cryptonight_##hash_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_1> },\
-        { "cryptonight-lite",       cryptonight_##hash_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_1> },\
-        { "cn-lite/0",              cryptonight_##hash_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_0> },\
-        { "cryptonight-lite/0",     cryptonight_##hash_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_0> },\
-        { "cn-lite/1",              cryptonight_##hash_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_1> },\
-        { "cryptonight-lite/1",     cryptonight_##hash_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_1> },\
-        { "cn-heavy",               cryptonight_##hash_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_0> },\
-        { "cryptonight-heavy",      cryptonight_##hash_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_0> },\
-        { "cn-heavy/0",             cryptonight_##hash_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_0> },\
-        { "cryptonight-heavy/0",    cryptonight_##hash_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_0> },\
-        { "cn-heavy/xhv",           cryptonight_##hash_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_XHV> },\
-        { "cryptonight-heavy/xhv",  cryptonight_##hash_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_XHV> },\
-        { "cn-heavy/tube",          cryptonight_##hash_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_TUBE> },\
-        { "cryptonight-heavy/tube", cryptonight_##hash_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_TUBE> }\
+        { "cn",                     cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_1> },\
+        { "cryptonight",            cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_1> },\
+        { "cn/0",                   cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_0> },\
+        { "cryptonight/0",          cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_0> },\
+        { "cn/1",                   cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_1> },\
+        { "cryptonight/1",          cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_1> },\
+        { "cn/xtl",                 cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_XTL> },\
+        { "cryptonight/xtl",        cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_XTL> },\
+        { "cn/msr",                 cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_MSR> },\
+        { "cryptonight/msr",        cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_MSR> },\
+        { "cn/xao",                 cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_XAO> },\
+        { "cryptonight/xao",        cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_XAO> },\
+        { "cn/rto",                 cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_RTO> },\
+        { "cryptonight/rto",        cryptonight_##hash##_hash<xmrig::CRYPTONIGHT,       soft_aes, xmrig::VARIANT_RTO> },\
+        { "cn-lite",                cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_1> },\
+        { "cryptonight-lite",       cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_1> },\
+        { "cn-lite/0",              cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_0> },\
+        { "cryptonight-lite/0",     cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_0> },\
+        { "cn-lite/1",              cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_1> },\
+        { "cryptonight-lite/1",     cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_LITE,  soft_aes, xmrig::VARIANT_1> },\
+        { "cn-heavy",               cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_0> },\
+        { "cryptonight-heavy",      cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_0> },\
+        { "cn-heavy/0",             cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_0> },\
+        { "cryptonight-heavy/0",    cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_0> },\
+        { "cn-heavy/xhv",           cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_XHV> },\
+        { "cryptonight-heavy/xhv",  cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_XHV> },\
+        { "cn-heavy/tube",          cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_TUBE> },\
+        { "cryptonight-heavy/tube", cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_TUBE> }\
     }
 
 std::map<std::string, cn_hash_fun> algo2fn[max_ways][2] = {
