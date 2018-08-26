@@ -1,4 +1,5 @@
 #include "async-worker.h"
+#include <chrono>
 
 #if defined(__ARM_ARCH)
 #define XMRIG_ARM 1
@@ -227,7 +228,7 @@ class Simple: public AsyncWorker {
                 }
                 if (fn) {
                     if (hash_count & 0x7 == 0) {
-                        const uint64_t new_timestemp = time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
+                        const uint64_t new_timestemp = std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count();
                         if (!timestamp || new_timestemp - timestamp > 60*1000) {
                             if (timestamp) {
                                 MessageValues values;
