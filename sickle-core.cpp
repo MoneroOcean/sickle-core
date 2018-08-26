@@ -27,4 +27,4 @@ AsyncWorker* create_worker(Nan::Callback* const data, Nan::Callback* const compl
   return new Simple(data, complete, error_callback, options);
 }
 
-NODE_MODULE(sickle-core, StreamWorkerWrapper::Init)
+NODE_MODULE(sickle_core, StreamWorkerWrapper::Init)

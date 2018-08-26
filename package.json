@@ -1,7 +1,7 @@
 {
     "name":    "sickle-core",
     "version": "0.0.1",
-    "main":    "sickle-core",
+    "main":    "sickle_core",
     "author": {
         "name":  "MoneroOcean",
         "email": "support@moneroocean.stream"
