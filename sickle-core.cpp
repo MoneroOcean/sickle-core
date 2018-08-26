@@ -155,7 +155,7 @@ class Simple: public AsyncWorker {
                 for (std::deque<Message>::const_iterator pi = messages.begin(); pi != messages.end(); ++ pi) {
                     if (pi->name == "job") {
                         const std::string algo           = pi->values.at("algo");
-                        const unsigned is_soft_aes       = atoi(pi->values.at("soft_aes").c_str()) ? 0 : 1;
+                        const unsigned is_soft_aes       = atoi(pi->values.at("soft_aes").c_str()) ? 1 : 0;
                         const unsigned new_ways          = atoi(pi->values.at("ways").c_str());
                         const std::string new_blob_str   = pi->values.at("blob_hex");
                         const char* const new_blob_hex   = new_blob_str.c_str();
