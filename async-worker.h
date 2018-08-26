@@ -165,14 +165,14 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
         }
 
         static NAN_METHOD(sendToCpp) {
-            v8::String::Utf8Value name(info[0]->ToString());
-            v8::Local<v8::Object> obj = info[1].As<v8::Object>();
+            const v8::String::Utf8Value name(info[0]->ToString());
+            const v8::Local<v8::Object> obj = info[1].As<v8::Object>();
             MessageValues values;
             v8::Local<v8::Array> property_names  = obj->GetOwnPropertyNames();
             for (unsigned i = 0; i < property_names->Length(); ++i) {
-                v8::Local<v8::Value> key = property_names->Get(i);
-                v8::String::Utf8Value key2  = v8::String::Utf8Value(key);
-                v8::String::Utf8Value value = v8::String::Utf8Value(obj->Get(key));
+                const v8::Local<v8::Value> key = property_names->Get(i);
+                const v8::String::Utf8Value key2  = key->ToString();
+                const v8::String::Utf8Value value = obj->Get(key)->ToString();
                 values[*key2] = *value;
             }
             AsyncWorkerWrapper* const obj = Nan::ObjectWrap::Unwrap<AsyncWorkerWrapper>(info.Holder());
