@@ -16,7 +16,7 @@ class Simple: public AsyncWorker {
             puts(pi->name.c_str());
             puts(pi->data.c_str());
         }
-        if (++i % 100000 == 0) {
+        if (++i % 1000000 == 0) {
           Message tosend("integer", std::to_string(i));
           sendToNode(progress, tosend);
         }
