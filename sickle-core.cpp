@@ -160,8 +160,8 @@ class Simple: public AsyncWorker {
                         const unsigned new_blob_len      = new_blob_len2 >> 1;
                         const std::string new_target_str = pi->values.at("target");
 
-                        const std::map<std::string, cn_hash_fun>::const_iterator pi_fn = algo2fn[ways][is_soft_aes].find(algo);
-                        if (pi_fn == algo2fn[ways][is_soft_aes].end()) {
+                        const std::map<std::string, cn_hash_fun>::const_iterator pi_fn = algo2fn[new_ways-1][is_soft_aes].find(algo);
+                        if (pi_fn == algo2fn[new_ways-1][is_soft_aes].end()) {
                             send_error(progress, "Unsupported algo");
                             continue;
                         }
