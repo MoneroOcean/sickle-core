@@ -15,6 +15,8 @@
 #endif
 
 const unsigned max_ways = 5;
+const unsigned min_blob_len = 76;
+const unsigned max_blob_len = 96;
 
 typedef void (*cn_hash_fun)(const uint8_t *blob, size_t size, uint8_t *output, cryptonight_ctx **ctx);
 
@@ -49,7 +51,7 @@ typedef void (*cn_hash_fun)(const uint8_t *blob, size_t size, uint8_t *output, c
         { "cryptonight-heavy/tube", cryptonight_##hash##_hash<xmrig::CRYPTONIGHT_HEAVY, soft_aes, xmrig::VARIANT_TUBE> }\
     }
 
-std::map<std::string, cn_hash_fun> algo2fn[max_ways][2] = {
+const std::map<std::string, cn_hash_fun> algo2fn[max_ways][2] = {
     { MAP_ALGO2FN(single, 0), MAP_ALGO2FN(single, 1) },
     { MAP_ALGO2FN(double, 0), MAP_ALGO2FN(double, 1) },
     { MAP_ALGO2FN(triple, 0), MAP_ALGO2FN(triple, 1) },
@@ -57,18 +59,41 @@ std::map<std::string, cn_hash_fun> algo2fn[max_ways][2] = {
     { MAP_ALGO2FN(penta,  0), MAP_ALGO2FN(penta,  1) }
 };
 
+static inline uint32_t *nonce(uint8_t* const blob, const unsigned blob_len, const unsigned way) {
+    return reinterpret_cast<uint32_t*>(blob + (way * blob_len) + 39);
+}
+
+inline static uint64_t *result(uint8_t* const hash, const unsigned way) {
+    return reinterpret_cast<uint64_t*>(hash + (way * 32) + 24);
+}
+
+static inline unsigned char hf_hex2bin(const char c, bool& err) {
+    if (c >= '0' && c <= '9')      return c - '0';
+    else if (c >= 'a' && c <= 'f') return c - 'a' + 0xA;
+    else if (c >= 'A' && c <= 'F') return c - 'A' + 0xA;
+    err = true;
+    return 0;
+}
+
+static bool fromHex(const char* in, unsigned int len, unsigned char* out) {
+    bool error = false;
+    for (unsigned int i = 0; i < len; ++i, ++out, in += 2) {
+        *out = (hf_hex2bin(*in, error) << 4) | hf_hex2bin(*(in + 1), error);
+        if (error) return false;
+    }
+    return true;
+}
+
 class Simple: public AsyncWorker {
 
     private:
 
-        inline uint32_t *nonce(uint8_t* const blob, const unsigned blob_len, const unsigned way) const {
-            return reinterpret_cast<uint32_t*>(blob + (way * blob_len) + 39);
+        void send_error(const char* const sz) {
+            MessageValues values;
+            values["message"] = "Bad blob hex";
+            sendToNode(progress, Message("error", values));
         }
-    
-        inline uint64_t *result(uint8_t* const hash, const unsigned way) const {
-            return reinterpret_cast<uint64_t*>(hash + (way * 32) + 24);
-        }
-    
+
     public:
 
         Simple(Nan::Callback* const data, Nan::Callback* const complete, Nan::Callback* const error_callback, const v8::Local<v8::Object>& options)
@@ -80,7 +105,7 @@ class Simple: public AsyncWorker {
             struct cryptonight_ctx* ctx[max_ways];
             unsigned ways = 0;
             unsigned mem = 0;
-            uint8_t* blob = nullptr;
+            uint8_t blob[max_ways * max_blob_len];
             unsigned blob_len = 0;
             uint8_t hash[max_ways * 32];
             uint64_t target = 0;
@@ -95,26 +120,49 @@ class Simple: public AsyncWorker {
                 fromNode.readAll(messages);
                 for (std::deque<Message>::const_iterator pi = messages.begin(); pi != messages.end(); ++ pi) {
                     if (pi->name == "job") {
-                        const std::string algo        = pi->values.at("algo");
-                        const unsigned is_soft_aes    = SOFT_AES; //pi->values.at("is_soft_aes") ? 0 : 1;
-                        const unsigned new_ways       = atoi(pi->values.at("ways").c_str());
-                        const unsigned new_mem        = atoi(pi->values.at("mem").c_str());
-                        const unsigned new_blob_len   = atoi(pi->values.at("blob_len").c_str());
-                        const uint8_t* const new_blob = reinterpret_cast<const uint8_t*>(pi->values.at("blob").c_str());
-                        target = atoi(pi->values.at("target").c_str());
+                        const std::string algo           = pi->values.at("algo");
+                        const unsigned is_soft_aes       = SOFT_AES; //pi->values.at("is_soft_aes") ? 0 : 1;
+                        const unsigned new_ways          = atoi(pi->values.at("ways").c_str());
+                        const unsigned new_mem           = atoi(pi->values.at("mem").c_str());
+                        const char* const new_blob_hex   = pi->values.at("blob_hex").c_str();
+                        const unsigned new_blob_len      = atoi(pi->values.at("blob_len").c_str());
+                        const std::string new_target_str = pi->values.at("target");
+                        if (blob_len < min_blob_len || blob_len >= max_blob_len) {
+                            send_error("Bad blob length");
+                            continue;
+                        }
+                        uint8_t blob1[max_blob_len];
+                        if (!fromHex(new_blob_hex, new_blob_len << 1, blob1)) {
+                            send_error("Bad blob hex");
+                            continue;
+                        }
+                        if (new_target_str.size() <= 8) {
+                            uint32_t tmp = 0;
+                            if (!fromHex(new_target_str.c_str(), 8, reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
+                                send_error("Bad target hex");
+                                continue;
+                            }
+                            target = 0xFFFFFFFFFFFFFFFFULL / (0xFFFFFFFFULL / static_cast<uint64_t>(tmp));
+                        } else if (new_target_str.size() <= 16) {
+                            uint64_t tmp = 0;
+                            if (!fromHex(new_target_str.c_str(), 16, reinterpret_cast<unsigned char*>(&tmp)) || tmp == 0) {
+                                send_error("Bad target hex");
+                                continue;
+                            }
+                            target = tmp;
+                        } else {
+                            send_error("Bad target hex");
+                            continue;
+                        }
+                        blob_len = new_blob_len;
                         if (ways != new_ways || mem != new_mem) {
                             if (ways) for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
                             ways = new_ways;
                             mem  = new_mem;
                             for (unsigned i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
                         }
-                        if (blob_len != new_blob_len) {
-                            if (blob) free(blob); // free previous blob
-                            blob_len = new_blob_len;
-                            blob = static_cast<uint8_t*>(malloc(blob_len));
-                        }
                         for (unsigned i = 0; i != ways; ++i) {
-                            memcpy(blob + blob_len*i, new_blob, blob_len);
+                            memcpy(blob + blob_len*i, blob1, blob_len);
                             *nonce(blob, blob_len, i) = 0;
                         }
                         fn = algo2fn[ways][is_soft_aes][algo];
