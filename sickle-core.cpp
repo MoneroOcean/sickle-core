@@ -166,7 +166,7 @@ class Simple: public AsyncWorker {
                             continue;
                         }
                         uint8_t blob1[max_blob_len];
-                        if (!fromHex(new_blob_hex, new_blob_len, blob1)) {
+                        if (!fromHex(new_blob_hex, new_blob_len >> 1, blob1)) {
                             send_error(progress, "Bad blob hex");
                             continue;
                         }
