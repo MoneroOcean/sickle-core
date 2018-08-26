@@ -98,17 +98,17 @@ class Simple: public AsyncWorker {
                         const uint8_t* const new_blob = reinterpret_cast<const uint8_t*>(pi->values.at("blob").c_str());
                         target = atoi(pi->values.at("target").c_str());
                         if (ways != new_ways || mem != new_mem) {
-                            if (ways) for (int i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
+                            if (ways) for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
                             ways = new_ways;
                             mem  = new_mem;
-                            for (int i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
+                            for (unsigned i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
                         }
                         if (blob_len != new_blob_len) {
                             if (blob) free(blob); // free previous blob
                             blob_len = new_blob_len;
                             blob = static_cast<uint8_t*>(malloc(blob_len));
                         }
-                        for (int i = 0; i != ways; ++i) {
+                        for (unsigned i = 0; i != ways; ++i) {
                             memcpy(blob + blob_len*i, new_blob, blob_len);
                             nonce(blob, blob_len, i) = 0;
                         }
@@ -117,14 +117,14 @@ class Simple: public AsyncWorker {
                     } else if (pi->name == "pause") {
                         fn = nullptr;
                     } else if (pi->name == "close") {
-                        if (ways) for (int i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory);
+                        if (ways) for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory);
                         if (blob) free(blob);
                         return;
                     }
                 }
                 if (fn) {
                     fn(blob, blob_len, hash, ctx);
-                    for (int i = 0; i != ways; ++i) {
+                    for (unsigned i = 0; i != ways; ++i) {
                         if (result(hash, i) < target) {
                             MessageValues values;
                             values["nonce"] = std::to_string(nonce(blob, blob_len, i));
