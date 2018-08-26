@@ -83,7 +83,7 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
                 }
                 v8::Local<v8::Value> argv[] = {
                     Nan::New<v8::String>(msg.name.c_str()).ToLocalChecked(),
-                    values.ToLocalChecked()
+                    values
                 };
                 m_progress->Call(2, argv, async_resource);
             }
