@@ -216,9 +216,11 @@ class Simple: public AsyncWorker {
                             memcpy(blob + blob_len*i, blob1, blob_len);
                             *p_nonce(blob, blob_len, i) = nonce++;
                         }
-                        fn = pi_fn->second;
-                        timestamp  = 0;
-                        hash_count = 0;
+                        if (fn != pi_fn->second) {
+                            fn = pi_fn->second;
+                            timestamp  = 0;
+                            hash_count = 0;
+                        }
                  
                     } else if (pi->name == "pause") {
                         fn = nullptr;
