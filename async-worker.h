@@ -135,7 +135,7 @@ class AsyncWorkerWrapper: public Nan::ObjectWrap {
         AsyncWorker* const m_worker;
 
         explicit AsyncWorkerWrapper(AsyncWorker* const worker) : m_worker(worker) {}
-        ~AsyncWorkerWrapper() {}
+        ~AsyncWorkerWrapper() { puts("DDDDDDDDDDDDDDD"); }
 
         static NAN_METHOD(New) {
             if (info.IsConstructCall()) {
