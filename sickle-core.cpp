@@ -196,6 +196,7 @@ class Simple: public AsyncWorker {
                         puts("XXXX5");
                         if (ways != new_ways || mem != new_mem) {
                             for (unsigned i = 0; i != ways; ++i) if (ctx[i]->memory) _mm_free(ctx[i]->memory); // free previous ways
+                        puts("XXXX7");
                             ways = new_ways;
                             mem  = new_mem;
                             for (unsigned i = 0; i != ways; ++i) ctx[i]->memory = static_cast<uint8_t *>(_mm_malloc(mem, 4096));
