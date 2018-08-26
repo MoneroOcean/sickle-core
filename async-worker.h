@@ -77,10 +77,9 @@ class AsyncWorker: public Nan::AsyncProgressQueueWorker<char> {
             m_toNode.readAll(contents);
 
             for (const Message& msg : contents) {
-                //v8::Local<v8::Object> values = Nan::New<v8::Object>();
                 auto values = Nan::New<v8::Object>();
                 for (MessageValues::const_iterator pi = msg.values.begin(); pi != msg.values.end(); ++ pi) {
-                    values->Set(Nan::New<v8::String>(pi->first.c_str()).ToLocalChecked(), Nan::New<v8::String>(pi->second.c_str()).ToLocalChecked());
+                    values->Set(Nan::New<v8::String>(pi->first.c_str()), Nan::New<v8::String>(pi->second.c_str()).ToLocalChecked());
                 }
                 v8::Local<v8::Value> argv[] = {
                     Nan::New<v8::String>(msg.name.c_str()).ToLocalChecked(),
