@@ -143,6 +143,8 @@ class Simple: public AsyncWorker {
             uint8_t hash[max_ways * hash_len];
             uint32_t nonce = 0;
             uint64_t target = 0;
+            uint64_t timestamp = 0;
+            unit64_t hash_count = 0;
 
             for (unsigned i = 0; i != max_ways; ++i) ctx[i] = &ctx_mem[i];
             
@@ -224,6 +226,17 @@ class Simple: public AsyncWorker {
                     }
                 }
                 if (fn) {
+                    if (hash_count & 0x7 == 0) {
+                        const uint64_t new_timestemp = time_point_cast<milliseconds>(high_resolution_clock::now()).time_since_epoch().count();
+                        if (!timestamp || new_timestemp - timestamp > 60*1000) {
+                            if (timestamp) {
+                                MessageValues values;
+                                values["hashrate"] = std::to_string(static_cast<float>(hash_count) / (new_timestemp - timestamp) / 1000.0f);
+                                sendToNode(progress, Message("hashrate", values));
+                            }
+                            timestamp = new_timestamp;
+                        }
+                    }
                     fn(blob, blob_len, hash, ctx);
                     for (unsigned i = 0; i != ways; ++i) {
                         uint32_t* const pnonce = p_nonce(blob, blob_len, i);
@@ -234,6 +247,7 @@ class Simple: public AsyncWorker {
                         }
                         *pnonce = nonce++;
                     }
+                    ++ hash_count;
                 } else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(200));
                 }
